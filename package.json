@@ -1,48 +1,156 @@
 {
     "name": "work-track",
-    "version": "1.0.0",
-    "description": "Detaylı ajanda ve proje takip uygulaması",
+    "version": "2.0.0",
+    "description": "Gelişmiş işlevselliklerle detaylı ajanda ve proje takip uygulaması",
     "main": "main.js",
     "scripts": {
       "start": "electron .",
       "dev": "electron . --dev",
       "build": "electron-builder",
-      "dist": "electron-builder --publish=never"
+      "dist": "electron-builder --publish=never",
+      "pack": "electron-builder --dir",
+      "clean": "rimraf dist",
+      "lint": "eslint *.js",
+      "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [
       "electron",
       "todo",
       "productivity",
-      "glassmorphism"
+      "glassmorphism",
+      "task-management",
+      "project-management",
+      "time-tracking",
+      "pomodoro",
+      "calendar",
+      "analytics",
+      "templates",
+      "tags"
     ],
-    "author": "Work Track",
+    "author": {
+      "name": "Work Track Team",
+      "email": "info@worktrack.app"
+    },
     "license": "MIT",
+    "homepage": "https://worktrack.app",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/worktrack/work-track.git"
+    },
     "devDependencies": {
       "electron": "^28.0.0",
-      "electron-builder": "^24.9.1"
+      "electron-builder": "^24.9.1",
+      "eslint": "^8.57.0",
+      "rimraf": "^5.0.0"
     },
     "build": {
       "appId": "com.worktrack.app",
       "productName": "Work Track",
       "directories": {
-        "output": "dist"
+        "output": "dist",
+        "buildResources": "build"
       },
       "files": [
         "**/*",
         "!node_modules",
-        "!dist"
+        "!dist",
+        "!build",
+        "!.git",
+        "!.gitignore",
+        "!README.md",
+        "!*.log"
       ],
+      "extraMetadata": {
+        "main": "main.js"
+      },
       "win": {
-        "target": "nsis",
-        "icon": "assets/icon.ico"
+        "target": [
+          {
+            "target": "nsis",
+            "arch": ["x64", "ia32"]
+          },
+          {
+            "target": "portable",
+            "arch": ["x64"]
+          }
+        ],
+        "icon": "assets/icon.ico",
+        "publisherName": "Work Track",
+        "requestedExecutionLevel": "asInvoker"
       },
       "mac": {
-        "target": "dmg",
-        "icon": "assets/icon.icns"
+        "target": [
+          {
+            "target": "dmg",
+            "arch": ["x64", "arm64"]
+          },
+          {
+            "target": "zip",
+            "arch": ["x64", "arm64"]
+          }
+        ],
+        "icon": "assets/icon.icns",
+        "category": "public.app-category.productivity",
+        "darkModeSupport": true
       },
       "linux": {
-        "target": "AppImage",
-        "icon": "assets/icon.png"
+        "target": [
+          {
+            "target": "AppImage",
+            "arch": ["x64"]
+          },
+          {
+            "target": "snap",
+            "arch": ["x64"]
+          },
+          {
+            "target": "deb",
+            "arch": ["x64"]
+          }
+        ],
+        "icon": "assets/icon.png",
+        "category": "Office"
+      },
+      "nsis": {
+        "oneClick": false,
+        "allowElevation": true,
+        "allowToChangeInstallationDirectory": true,
+        "createDesktopShortcut": true,
+        "createStartMenuShortcut": true,
+        "shortcutName": "Work Track"
+      },
+      "dmg": {
+        "title": "Work Track",
+        "icon": "assets/icon.icns",
+        "background": "assets/dmg-background.png",
+        "window": {
+          "width": 600,
+          "height": 400
+        },
+        "contents": [
+          {
+            "x": 150,
+            "y": 200,
+            "type": "file"
+          },
+          {
+            "x": 450,
+            "y": 200,
+            "type": "link",
+            "path": "/Applications"
+          }
+        ]
+      },
+      "snap": {
+        "summary": "Gelişmiş görev ve proje takip uygulaması",
+        "description": "Work Track, modern glassmorphism tasarımı ile güçlü görev yönetimi, Pomodoro timer, analitikler ve daha fazlasını sunan üretkenlik uygulamasıdır.",
+        "grade": "stable",
+        "confinement": "strict",
+        "category": "office"
       }
+    },
+    "engines": {
+      "node": ">=16.0.0",
+      "npm": ">=8.0.0"
     }
   }

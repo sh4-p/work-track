@@ -34,12 +34,23 @@
                 <button class="nav-btn" data-view="analytics">
                     <i class="fas fa-chart-bar"></i> Analitik
                 </button>
+                <button class="nav-btn" data-view="templates">
+                    <i class="fas fa-clipboard-list"></i> Şablonlar
+                </button>
+                
             </nav>
 
             <div class="sidebar-footer">
                 <button class="btn-add-task">
                     <i class="fas fa-plus"></i> Yeni Görev
                 </button>
+
+                <!-- Hızlı İşlemler -->
+                <div class="quick-actions-sidebar">
+                    <button class="btn-quick-action" onclick="app.deleteAllCompletedTasks()" title="Tamamlanan Görevleri Sil">
+                        <i class="fas fa-trash-alt"></i> Tamamlananları Sil
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -50,14 +61,17 @@
                 <div class="search-container">
                     <i class="fas fa-search"></i>
                     <input type="text" id="search-input" placeholder="Görev, proje veya kategori ara...">
+                    <!-- Arama sonuçları buraya dinamik olarak eklenecek -->
                 </div>
+                
                 <div class="top-actions">
-                    <button class="btn-filter">
+                    <button class="btn-filter" title="Filtrele">
                         <i class="fas fa-filter"></i>
                     </button>
-                    <button class="btn-settings">
+                    <button class="btn-settings" title="Ayarlar" onclick="app.openSettingsModal()">
                         <i class="fas fa-cog"></i>
                     </button>
+                    
                 </div>
             </div>
 
@@ -114,14 +128,31 @@
 
                     <div class="dashboard-sections">
                         <div class="recent-activities">
-                            <h3>Son Aktiviteler</h3>
+                            <div class="section-header">
+                                <h3>Son Aktiviteler</h3>
+                                <div class="section-actions">
+                                    <button class="btn-section-action" onclick="app.exportData()" title="Verileri Dışa Aktar">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="btn-section-action" onclick="app.importData()" title="Verileri İçe Aktar">
+                                        <i class="fas fa-upload"></i>
+                                    </button>
+                                </div>
+                            </div>
                             <div id="recent-activities-list" class="activities-list">
                                 <!-- Dinamik içerik -->
                             </div>
                         </div>
 
                         <div class="today-tasks">
-                            <h3>Bugünün Görevleri</h3>
+                            <div class="section-header">
+                                <h3>Bugünün Görevleri</h3>
+                                <div class="section-actions">
+                                    <button class="btn-section-action" onclick="app.switchView('today')" title="Detaylı Görünüm">
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
                             <div id="today-tasks-list" class="tasks-list">
                                 <!-- Dinamik içerik -->
                             </div>
@@ -151,9 +182,14 @@
                 <div id="projects-view" class="view-content">
                     <div class="projects-header">
                         <h1>Projeler</h1>
-                        <button class="btn-new-project">
-                            <i class="fas fa-plus"></i> Yeni Proje
-                        </button>
+                        <div class="header-actions">
+                            <button class="btn-danger" onclick="app.deleteAllProjects()" title="Tüm Projeleri Sil">
+                                <i class="fas fa-trash"></i> Tümünü Sil
+                            </button>
+                            <button class="btn-new-project">
+                                <i class="fas fa-plus"></i> Yeni Proje
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="projects-grid" id="projects-grid">
@@ -165,9 +201,14 @@
                 <div id="categories-view" class="view-content">
                     <div class="categories-header">
                         <h1>Kategoriler</h1>
-                        <button class="btn-new-category">
-                            <i class="fas fa-plus"></i> Yeni Kategori
-                        </button>
+                        <div class="header-actions">
+                            <button class="btn-danger" onclick="app.deleteAllCategories()" title="Tüm Kategorileri Sil">
+                                <i class="fas fa-trash"></i> Tümünü Sil
+                            </button>
+                            <button class="btn-new-category">
+                                <i class="fas fa-plus"></i> Yeni Kategori
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="categories-list" id="categories-list">
@@ -206,8 +247,18 @@
                     </div>
                     
                     <div class="analytics-content">
-                        <div class="chart-container">
-                            <canvas id="productivity-chart"></canvas>
+                        <div class="analytics-main">
+                            <div class="analytics-charts">
+                                <div class="chart-container">
+                                    <h3>Verimlilik Trendi</h3>
+                                    <canvas id="productivity-chart"></canvas>
+                                </div>
+                                
+                                <div class="chart-container">
+                                    <h3>Kategori Dağılımı</h3>
+                                    <canvas id="category-chart"></canvas>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="analytics-stats">
@@ -227,7 +278,26 @@
                                 <h3>Ortalama Tamamlama Süresi</h3>
                                 <p id="avg-completion">2.5 saat</p>
                             </div>
+                            
+                            <div class="analytics-card">
+                                <h3>Bu Hafta Tamamlanan</h3>
+                                <p id="week-completed">12 görev</p>
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Şablonlar -->
+                <div id="templates-view" class="view-content">
+                    <div class="templates-header">
+                        <h1>Görev Şablonları</h1>
+                        <button class="btn-new-template" onclick="app.openTemplateModal()">
+                            <i class="fas fa-plus"></i> Yeni Şablon
+                        </button>
+                    </div>
+                    
+                    <div class="templates-grid" id="templates-grid">
+                        <!-- Dinamik şablon kartları -->
                     </div>
                 </div>
             </div>
@@ -282,14 +352,44 @@
                     </div>
                     
                     <div class="form-group">
+                        <label for="task-status">Durum</label>
+                        <select id="task-status">
+                            <option value="pending">Bekleyen</option>
+                            <option value="in-progress">Devam Eden</option>
+                            <option value="completed">Tamamlandı</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
                         <label for="task-deadline">Son Tarih</label>
                         <input type="datetime-local" id="task-deadline">
                     </div>
+                    
+                    <div class="form-group">
+                        <label for="task-estimated-time">Tahmini Süre (saat)</label>
+                        <input type="number" id="task-estimated-time" step="0.5" min="0">
+                    </div>
                 </div>
-                
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="task-start-time">Başlangıç Saati</label>
+                        <input type="time" id="task-start-time" value="09:00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="task-end-time">Bitiş Saati</label>
+                        <input type="time" id="task-end-time" value="17:00">
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label for="task-estimated-time">Tahmini Süre (saat)</label>
-                    <input type="number" id="task-estimated-time" step="0.5" min="0">
+                    <label for="task-tags">Etiketler</label>
+                    <div class="tags-container" id="task-tags-container">
+                        <!-- Etiketler buraya eklenecek -->
+                    </div>
                 </div>
                 
                 <div class="form-actions">
@@ -370,6 +470,10 @@
                             <option value="fas fa-shopping-cart">Alışveriş</option>
                             <option value="fas fa-plane">Seyahat</option>
                             <option value="fas fa-dumbbell">Spor</option>
+                            <option value="fas fa-users">Toplantı</option>
+                            <option value="fas fa-lightbulb">İnovasyon</option>
+                            <option value="fas fa-chart-bar">Analiz</option>
+                            <option value="fas fa-cog">Sistem</option>
                         </select>
                     </div>
                 </div>
@@ -380,6 +484,142 @@
                 </div>
             </form>
         </div>
+    </div>
+
+    <!-- Şablon Modal -->
+    <div id="template-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="template-modal-title">Yeni Şablon</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <form id="template-form">
+                <div class="form-group">
+                    <label for="template-name">Şablon Adı</label>
+                    <input type="text" id="template-name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="template-description">Açıklama</label>
+                    <textarea id="template-description" rows="3"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="template-category">Varsayılan Kategori</label>
+                        <select id="template-category">
+                            <option value="">Kategori Seçin</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="template-priority">Varsayılan Öncelik</label>
+                        <select id="template-priority">
+                            <option value="low">Düşük</option>
+                            <option value="medium" selected>Orta</option>
+                            <option value="high">Yüksek</option>
+                            <option value="urgent">Acil</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="template-estimated-time">Tahmini Süre (saat)</label>
+                    <input type="number" id="template-estimated-time" step="0.5" min="0">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel">İptal</button>
+                    <button type="submit" class="btn-save">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ayarlar Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ayarlar</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="settings-content">
+                <div class="settings-section">
+                    <h3>Genel Ayarlar</h3>
+                    <div class="setting-item">
+                        <label for="setting-notifications">Bildirimler</label>
+                        <input type="checkbox" id="setting-notifications" checked>
+                    </div>
+                    <div class="setting-item">
+                        <label for="setting-sound">Bildirim Sesi</label>
+                        <input type="checkbox" id="setting-sound" checked>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Pomodoro Ayarları</h3>
+                    <div class="setting-item">
+                        <label for="setting-pomodoro-length">Pomodoro Süresi (dakika)</label>
+                        <input type="number" id="setting-pomodoro-length" value="25" min="5" max="60">
+                    </div>
+                    <div class="setting-item">
+                        <label for="setting-short-break">Kısa Mola (dakika)</label>
+                        <input type="number" id="setting-short-break" value="5" min="1" max="15">
+                    </div>
+                    <div class="setting-item">
+                        <label for="setting-long-break">Uzun Mola (dakika)</label>
+                        <input type="number" id="setting-long-break" value="15" min="10" max="30">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Çalışma Saatleri</h3>
+                    <div class="setting-item">
+                        <label for="setting-start-time">Başlangıç Saati</label>
+                        <input type="time" id="setting-start-time" value="09:00">
+                    </div>
+                    <div class="setting-item">
+                        <label for="setting-end-time">Bitiş Saati</label>
+                        <input type="time" id="setting-end-time" value="18:00">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Veri Yönetimi</h3>
+                    <div class="setting-actions">
+                        <button class="btn-setting" onclick="app.exportData()">
+                            <i class="fas fa-download"></i> Verileri Dışa Aktar
+                        </button>
+                        <button class="btn-setting" onclick="app.importData()">
+                            <i class="fas fa-upload"></i> Verileri İçe Aktar
+                        </button>
+                        <button class="btn-setting btn-danger" onclick="app.deleteAllData()">
+                            <i class="fas fa-trash"></i> Tüm Verileri Sil
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn-cancel">İptal</button>
+                <button type="button" class="btn-save" onclick="app.saveSettings()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hızlı Erişim Butonları -->
+    <div class="quick-actions">
+        <button class="quick-action-btn" onclick="app.openTaskModal()" title="Hızlı Görev Ekle">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button class="quick-action-btn" onclick="app.switchView('today')" title="Bugünün Görevleri">
+            <i class="fas fa-calendar-day"></i>
+        </button>
+        <button class="quick-action-btn" onclick="window.scrollTo(0, 0)" title="Yukarı Çık">
+            <i class="fas fa-chevron-up"></i>
+        </button>
     </div>
 
     <script src="script.js"></script>

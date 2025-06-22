@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, dialog, globalShortcut } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -25,7 +25,9 @@ function createWindow() {
     vibrancy: 'under-window',
     backgroundMaterial: 'acrylic',
     show: false,
-    icon: path.join(__dirname, 'assets', 'icon.png')
+    icon: path.join(__dirname, 'assets', 'icon.png'),
+    resizable: true,
+    fullscreenable: true
   });
 
   // HTML dosyasını yükle
@@ -40,10 +42,34 @@ function createWindow() {
   if (process.argv.includes('--dev')) {
     mainWindow.webContents.openDevTools();
   }
+
+  // Pencere olayları
+  mainWindow.on('enter-full-screen', () => {
+    mainWindow.webContents.send('fullscreen-changed', true);
+  });
+
+  mainWindow.on('leave-full-screen', () => {
+    mainWindow.webContents.send('fullscreen-changed', false);
+  });
 }
 
 // Uygulama hazır olduğunda pencereyi oluştur
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  
+  // Global kısayol tuşları
+  globalShortcut.register('F11', () => {
+    if (mainWindow) {
+      mainWindow.setFullScreen(!mainWindow.isFullScreen());
+    }
+  });
+
+  globalShortcut.register('CommandOrControl+Shift+D', () => {
+    if (mainWindow) {
+      mainWindow.webContents.openDevTools();
+    }
+  });
+});
 
 // Tüm pencereler kapatıldığında uygulamayı kapat (macOS hariç)
 app.on('window-all-closed', () => {
@@ -56,6 +82,11 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
+});
+
+app.on('will-quit', () => {
+  // Tüm global kısayol tuşlarını temizle
+  globalShortcut.unregisterAll();
 });
 
 // IPC handlers
@@ -125,19 +156,83 @@ ipcMain.handle('import-data', async () => {
   }
 });
 
+// Pencere kontrolü
+ipcMain.handle('toggle-fullscreen', () => {
+  if (mainWindow) {
+    mainWindow.setFullScreen(!mainWindow.isFullScreen());
+    return mainWindow.isFullScreen();
+  }
+  return false;
+});
+
+ipcMain.handle('minimize-window', () => {
+  if (mainWindow) {
+    mainWindow.minimize();
+  }
+});
+
+ipcMain.handle('maximize-window', () => {
+  if (mainWindow) {
+    if (mainWindow.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow.maximize();
+    }
+    return mainWindow.isMaximized();
+  }
+  return false;
+});
+
+ipcMain.handle('close-window', () => {
+  if (mainWindow) {
+    mainWindow.close();
+  }
+});
+
+ipcMain.handle('set-window-size', (event, width, height) => {
+  if (mainWindow) {
+    mainWindow.setSize(width, height);
+    mainWindow.center();
+  }
+});
+
+// Bildirim gönderme
+ipcMain.handle('send-notification', (event, options) => {
+  if (mainWindow) {
+    mainWindow.webContents.send('show-notification', options);
+  }
+});
+
 // Menü oluştur
 const template = [
   {
     label: 'Dosya',
     submenu: [
       {
+        label: 'Yeni Görev',
+        accelerator: 'CommandOrControl+N',
+        click: () => {
+          mainWindow.webContents.send('menu-action', 'new-task');
+        }
+      },
+      {
+        label: 'Yeni Proje',
+        accelerator: 'CommandOrControl+Shift+N',
+        click: () => {
+          mainWindow.webContents.send('menu-action', 'new-project');
+        }
+      },
+      { type: 'separator' },
+      {
         label: 'Verileri Dışa Aktar',
+        accelerator: 'CommandOrControl+E',
         click: async () => {
           mainWindow.webContents.send('export-data');
         }
       },
       {
         label: 'Verileri İçe Aktar',
+        accelerator: 'CommandOrControl+I',
         click: async () => {
           mainWindow.webContents.send('import-data');
         }
@@ -157,16 +252,81 @@ const template = [
       { type: 'separator' },
       { label: 'Kes', role: 'cut' },
       { label: 'Kopyala', role: 'copy' },
-      { label: 'Yapıştır', role: 'paste' }
+      { label: 'Yapıştır', role: 'paste' },
+      { type: 'separator' },
+      {
+        label: 'Arama',
+        accelerator: 'CommandOrControl+F',
+        click: () => {
+          mainWindow.webContents.send('menu-action', 'focus-search');
+        }
+      }
     ]
   },
   {
     label: 'Görünüm',
     submenu: [
-      { label: 'Yeniden Yükle', role: 'reload' },
-      { label: 'Geliştirici Araçları', role: 'toggleDevTools' },
+      {
+        label: 'Tam Ekran',
+        accelerator: 'F11',
+        click: () => {
+          mainWindow.setFullScreen(!mainWindow.isFullScreen());
+        }
+      },
       { type: 'separator' },
-      { label: 'Tam Ekran', role: 'togglefullscreen' }
+      {
+        label: 'Küçük Pencere (800x600)',
+        click: () => {
+          mainWindow.setSize(800, 600);
+          mainWindow.center();
+        }
+      },
+      {
+        label: 'Orta Pencere (1200x800)',
+        click: () => {
+          mainWindow.setSize(1200, 800);
+          mainWindow.center();
+        }
+      },
+      {
+        label: 'Büyük Pencere (1600x1000)',
+        click: () => {
+          mainWindow.setSize(1600, 1000);
+          mainWindow.center();
+        }
+      },
+      { type: 'separator' },
+      { label: 'Yeniden Yükle', role: 'reload' },
+      { label: 'Geliştirici Araçları', role: 'toggleDevTools' }
+    ]
+  },
+  {
+    label: 'Tema',
+    submenu: [
+      {
+        label: 'Klasik Mavi',
+        click: () => {
+          mainWindow.webContents.send('change-theme', 'classic-blue');
+        }
+      },
+      {
+        label: 'Karanlık Mor',
+        click: () => {
+          mainWindow.webContents.send('change-theme', 'dark-purple');
+        }
+      },
+      {
+        label: 'Yeşil Doğa',
+        click: () => {
+          mainWindow.webContents.send('change-theme', 'nature-green');
+        }
+      },
+      {
+        label: 'Gün Batımı',
+        click: () => {
+          mainWindow.webContents.send('change-theme', 'sunset-orange');
+        }
+      }
     ]
   }
 ];
