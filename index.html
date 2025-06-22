@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Track - İş Takip Uygulaması</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Yan Panel -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-tasks"></i> Work Track</h2>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-view="dashboard">
+                    <i class="fas fa-home"></i> Kontrol Paneli
+                </button>
+                <button class="nav-btn" data-view="today">
+                    <i class="fas fa-calendar-day"></i> Bugün
+                </button>
+                <button class="nav-btn" data-view="projects">
+                    <i class="fas fa-folder"></i> Projeler
+                </button>
+                <button class="nav-btn" data-view="categories">
+                    <i class="fas fa-tags"></i> Kategoriler
+                </button>
+                <button class="nav-btn" data-view="calendar">
+                    <i class="fas fa-calendar"></i> Takvim
+                </button>
+                <button class="nav-btn" data-view="analytics">
+                    <i class="fas fa-chart-bar"></i> Analitik
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn-add-task">
+                    <i class="fas fa-plus"></i> Yeni Görev
+                </button>
+            </div>
+        </div>
+
+        <!-- Ana İçerik -->
+        <div class="main-content">
+            <!-- Üst Bar -->
+            <div class="top-bar">
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Görev, proje veya kategori ara...">
+                </div>
+                <div class="top-actions">
+                    <button class="btn-filter">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                    <button class="btn-settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- İçerik Alanları -->
+            <div class="content-area">
+                <!-- Kontrol Paneli -->
+                <div id="dashboard-view" class="view-content active">
+                    <div class="dashboard-header">
+                        <h1>Kontrol Paneli</h1>
+                        <p id="current-date"></p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="total-tasks">0</h3>
+                                <p>Toplam Görev</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="completed-tasks">0</h3>
+                                <p>Tamamlanan</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="pending-tasks">0</h3>
+                                <p>Bekleyen</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-folder-open"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="active-projects">0</h3>
+                                <p>Aktif Proje</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-sections">
+                        <div class="recent-activities">
+                            <h3>Son Aktiviteler</h3>
+                            <div id="recent-activities-list" class="activities-list">
+                                <!-- Dinamik içerik -->
+                            </div>
+                        </div>
+
+                        <div class="today-tasks">
+                            <h3>Bugünün Görevleri</h3>
+                            <div id="today-tasks-list" class="tasks-list">
+                                <!-- Dinamik içerik -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bugün Görünümü -->
+                <div id="today-view" class="view-content">
+                    <div class="today-header">
+                        <h1>Bugün</h1>
+                        <div class="date-navigation">
+                            <button id="prev-day"><i class="fas fa-chevron-left"></i></button>
+                            <span id="selected-date"></span>
+                            <button id="next-day"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="today-content">
+                        <div class="time-slots" id="time-slots">
+                            <!-- Dinamik zaman dilimleri -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projeler -->
+                <div id="projects-view" class="view-content">
+                    <div class="projects-header">
+                        <h1>Projeler</h1>
+                        <button class="btn-new-project">
+                            <i class="fas fa-plus"></i> Yeni Proje
+                        </button>
+                    </div>
+                    
+                    <div class="projects-grid" id="projects-grid">
+                        <!-- Dinamik proje kartları -->
+                    </div>
+                </div>
+
+                <!-- Kategoriler -->
+                <div id="categories-view" class="view-content">
+                    <div class="categories-header">
+                        <h1>Kategoriler</h1>
+                        <button class="btn-new-category">
+                            <i class="fas fa-plus"></i> Yeni Kategori
+                        </button>
+                    </div>
+                    
+                    <div class="categories-list" id="categories-list">
+                        <!-- Dinamik kategori listesi -->
+                    </div>
+                </div>
+
+                <!-- Takvim -->
+                <div id="calendar-view" class="view-content">
+                    <div class="calendar-header">
+                        <h1>Takvim</h1>
+                        <div class="calendar-navigation">
+                            <button id="prev-month"><i class="fas fa-chevron-left"></i></button>
+                            <span id="current-month"></span>
+                            <button id="next-month"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="calendar-container">
+                        <div class="calendar-grid" id="calendar-grid">
+                            <!-- Dinamik takvim -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analitik -->
+                <div id="analytics-view" class="view-content">
+                    <div class="analytics-header">
+                        <h1>Analitik</h1>
+                        <select id="analytics-period">
+                            <option value="week">Bu Hafta</option>
+                            <option value="month">Bu Ay</option>
+                            <option value="quarter">Bu Çeyrek</option>
+                            <option value="year">Bu Yıl</option>
+                        </select>
+                    </div>
+                    
+                    <div class="analytics-content">
+                        <div class="chart-container">
+                            <canvas id="productivity-chart"></canvas>
+                        </div>
+                        
+                        <div class="analytics-stats">
+                            <div class="analytics-card">
+                                <h3>Verimlilik Skoru</h3>
+                                <div class="score-circle">
+                                    <span id="productivity-score">85%</span>
+                                </div>
+                            </div>
+                            
+                            <div class="analytics-card">
+                                <h3>En Verimli Kategori</h3>
+                                <p id="top-category">Geliştirme</p>
+                            </div>
+                            
+                            <div class="analytics-card">
+                                <h3>Ortalama Tamamlama Süresi</h3>
+                                <p id="avg-completion">2.5 saat</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal'lar -->
+    <!-- Görev Ekleme/Düzenleme Modal -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="task-modal-title">Yeni Görev</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <form id="task-form">
+                <div class="form-group">
+                    <label for="task-title">Görev Başlığı</label>
+                    <input type="text" id="task-title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="task-description">Açıklama</label>
+                    <textarea id="task-description" rows="3"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="task-project">Proje</label>
+                        <select id="task-project">
+                            <option value="">Proje Seçin</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="task-category">Kategori</label>
+                        <select id="task-category">
+                            <option value="">Kategori Seçin</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="task-priority">Öncelik</label>
+                        <select id="task-priority">
+                            <option value="low">Düşük</option>
+                            <option value="medium" selected>Orta</option>
+                            <option value="high">Yüksek</option>
+                            <option value="urgent">Acil</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="task-deadline">Son Tarih</label>
+                        <input type="datetime-local" id="task-deadline">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="task-estimated-time">Tahmini Süre (saat)</label>
+                    <input type="number" id="task-estimated-time" step="0.5" min="0">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel">İptal</button>
+                    <button type="submit" class="btn-save">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Proje Modal -->
+    <div id="project-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="project-modal-title">Yeni Proje</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <form id="project-form">
+                <div class="form-group">
+                    <label for="project-name">Proje Adı</label>
+                    <input type="text" id="project-name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="project-description">Açıklama</label>
+                    <textarea id="project-description" rows="3"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="project-color">Renk</label>
+                        <input type="color" id="project-color" value="#007bff">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="project-deadline">Son Tarih</label>
+                        <input type="date" id="project-deadline">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel">İptal</button>
+                    <button type="submit" class="btn-save">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Kategori Modal -->
+    <div id="category-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="category-modal-title">Yeni Kategori</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <form id="category-form">
+                <div class="form-group">
+                    <label for="category-name">Kategori Adı</label>
+                    <input type="text" id="category-name" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category-color">Renk</label>
+                        <input type="color" id="category-color" value="#28a745">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category-icon">İkon</label>
+                        <select id="category-icon">
+                            <option value="fas fa-briefcase">İş</option>
+                            <option value="fas fa-code">Kodlama</option>
+                            <option value="fas fa-palette">Tasarım</option>
+                            <option value="fas fa-book">Eğitim</option>
+                            <option value="fas fa-heart">Kişisel</option>
+                            <option value="fas fa-shopping-cart">Alışveriş</option>
+                            <option value="fas fa-plane">Seyahat</option>
+                            <option value="fas fa-dumbbell">Spor</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel">İptal</button>
+                    <button type="submit" class="btn-save">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
