@@ -1,4 +1,4 @@
-// Work Track - Ana JavaScript Dosyası - Gelişmiş Özellikler
+// Work Track - Ana JavaScript Dosyası - Gelişmiş Özellikler + Widget Desteği
 
 class WorkTrackApp {
     constructor() {
@@ -60,6 +60,9 @@ class WorkTrackApp {
             window.electronAPI.onFullscreenChanged((isFullscreen) => this.handleFullscreenChange(isFullscreen));
         }
 
+        // Widget desteği ekle
+        this.setupWidgetSupport();
+
         // Bildirim izni iste
         if ('Notification' in window) {
             Notification.requestPermission();
@@ -67,6 +70,26 @@ class WorkTrackApp {
 
         // Otomatik kaydetme
         setInterval(() => this.saveData(), 30000); // 30 saniyede bir kaydet
+    }
+
+    setupWidgetSupport() {
+        // Widget'tan gelen görev oluşturma isteklerini dinle
+        if (window.electronAPI) {
+            // Widget'tan görev oluşturma isteği geldiğinde
+            window.electronAPI.onCreateTaskFromWidget?.((taskData) => {
+                // Widget'tan gelen görev verilerini işle
+                if (taskData && taskData.id) {
+                    // Görev zaten data'da var mı kontrol et
+                    const existingTask = this.data.tasks.find(t => t.id === taskData.id);
+                    if (!existingTask) {
+                        this.data.tasks.push(taskData);
+                        this.saveData();
+                        this.updateUI();
+                        this.showNotification('Widget\'tan görev eklendi', 'success');
+                    }
+                }
+            });
+        }
     }
 
     async loadData() {
@@ -92,6 +115,7 @@ class WorkTrackApp {
         try {
             if (window.electronAPI) {
                 await window.electronAPI.saveData(this.data);
+                // Widget'a otomatik olarak güncellenmiş veri gönderilecek (main.js'te yapılıyor)
             } else {
                 localStorage.setItem('workTrackData', JSON.stringify(this.data));
             }
@@ -141,7 +165,7 @@ class WorkTrackApp {
             ];
         }
 
-        // Varsayılan kategoriler (mevcut kod korundu)
+        // Varsayılan kategoriler
         if (this.data.categories.length === 0) {
             this.data.categories = [
                 {
@@ -175,7 +199,7 @@ class WorkTrackApp {
             ];
         }
 
-        // Varsayılan projeler (mevcut kod korundu)
+        // Varsayılan projeler
         if (this.data.projects.length === 0) {
             this.data.projects = [
                 {
@@ -201,7 +225,7 @@ class WorkTrackApp {
             ];
         }
 
-        // Varsayılan görevler (mevcut kod korundu)
+        // Varsayılan görevler
         if (this.data.tasks.length === 0) {
             const today = new Date();
             const tomorrow = new Date(today);
@@ -276,7 +300,7 @@ class WorkTrackApp {
     }
 
     setupEventListeners() {
-        // Mevcut olay dinleyicileri (korundu)
+        // Navigasyon butonları
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const view = e.currentTarget.dataset.view;
@@ -288,13 +312,19 @@ class WorkTrackApp {
             this.openTaskModal();
         });
 
-        document.querySelector('.btn-new-project').addEventListener('click', () => {
-            this.openProjectModal();
-        });
+        const newProjectBtn = document.querySelector('.btn-new-project');
+        if (newProjectBtn) {
+            newProjectBtn.addEventListener('click', () => {
+                this.openProjectModal();
+            });
+        }
 
-        document.querySelector('.btn-new-category').addEventListener('click', () => {
-            this.openCategoryModal();
-        });
+        const newCategoryBtn = document.querySelector('.btn-new-category');
+        if (newCategoryBtn) {
+            newCategoryBtn.addEventListener('click', () => {
+                this.openCategoryModal();
+            });
+        }
 
         // Modal kapatma
         document.querySelectorAll('.modal-close, .btn-cancel').forEach(btn => {
@@ -339,26 +369,40 @@ class WorkTrackApp {
         }
 
         // Tarih navigasyonu
-        document.getElementById('prev-day').addEventListener('click', () => {
-            this.selectedDate.setDate(this.selectedDate.getDate() - 1);
-            this.updateTodayView();
-        });
+        const prevDayBtn = document.getElementById('prev-day');
+        const nextDayBtn = document.getElementById('next-day');
+        
+        if (prevDayBtn) {
+            prevDayBtn.addEventListener('click', () => {
+                this.selectedDate.setDate(this.selectedDate.getDate() - 1);
+                this.updateTodayView();
+            });
+        }
 
-        document.getElementById('next-day').addEventListener('click', () => {
-            this.selectedDate.setDate(this.selectedDate.getDate() + 1);
-            this.updateTodayView();
-        });
+        if (nextDayBtn) {
+            nextDayBtn.addEventListener('click', () => {
+                this.selectedDate.setDate(this.selectedDate.getDate() + 1);
+                this.updateTodayView();
+            });
+        }
 
         // Takvim navigasyonu
-        document.getElementById('prev-month').addEventListener('click', () => {
-            this.currentDate.setMonth(this.currentDate.getMonth() - 1);
-            this.updateCalendarView();
-        });
+        const prevMonthBtn = document.getElementById('prev-month');
+        const nextMonthBtn = document.getElementById('next-month');
+        
+        if (prevMonthBtn) {
+            prevMonthBtn.addEventListener('click', () => {
+                this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+                this.updateCalendarView();
+            });
+        }
 
-        document.getElementById('next-month').addEventListener('click', () => {
-            this.currentDate.setMonth(this.currentDate.getMonth() + 1);
-            this.updateCalendarView();
-        });
+        if (nextMonthBtn) {
+            nextMonthBtn.addEventListener('click', () => {
+                this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+                this.updateCalendarView();
+            });
+        }
 
         // Gelişmiş arama
         document.getElementById('search-input').addEventListener('input', (e) => {
@@ -366,9 +410,12 @@ class WorkTrackApp {
         });
 
         // Analitik periyodu
-        document.getElementById('analytics-period').addEventListener('change', (e) => {
-            this.updateAnalyticsExtended(e.target.value);
-        });
+        const analyticsPeriod = document.getElementById('analytics-period');
+        if (analyticsPeriod) {
+            analyticsPeriod.addEventListener('change', (e) => {
+                this.updateAnalyticsExtended(e.target.value);
+            });
+        }
 
         // Kısayol tuşları
         document.addEventListener('keydown', (e) => {
@@ -617,6 +664,47 @@ class WorkTrackApp {
         }
     }
 
+    deleteAllProjects() {
+        if (this.data.projects.length === 0) {
+            this.showNotification('Silinecek proje bulunamadı', 'info');
+            return;
+        }
+
+        const result = confirm(`${this.data.projects.length} projeyi silmek istediğinizden emin misiniz?\n\nProje görevleri projesiz hale gelecek.`);
+        if (result) {
+            // Tüm görevlerin proje bağlantısını kaldır
+            this.data.tasks.forEach(task => {
+                task.projectId = null;
+            });
+            
+            this.data.projects = [];
+            this.saveData();
+            this.updateUI();
+            this.showNotification('Tüm projeler silindi', 'success');
+        }
+    }
+
+    deleteAllCategories() {
+        if (this.data.categories.length === 0) {
+            this.showNotification('Silinecek kategori bulunamadı', 'info');
+            return;
+        }
+
+        const result = confirm(`${this.data.categories.length} kategoriyi silmek istediğinizden emin misiniz?\n\nKategori görevleri kategorisiz hale gelecek.`);
+        if (result) {
+            // Tüm görevlerin kategori bağlantısını kaldır
+            this.data.tasks.forEach(task => {
+                task.categoryId = null;
+            });
+            
+            // Varsayılan kategorileri yeniden oluştur
+            this.data.categories = [];
+            this.createDefaultData();
+            this.updateUI();
+            this.showNotification('Tüm kategoriler silindi ve varsayılanlar yeniden oluşturuldu', 'success');
+        }
+    }
+
     // Gelişmiş arama
     performAdvancedSearch(query) {
         if (!query.trim()) {
@@ -814,20 +902,25 @@ class WorkTrackApp {
     updatePomodoroDisplay() {
         const minutes = Math.floor(this.pomodoroTimeLeft / 60);
         const seconds = this.pomodoroTimeLeft % 60;
-        document.getElementById('timer-minutes').textContent = minutes.toString().padStart(2, '0');
-        document.getElementById('timer-seconds').textContent = seconds.toString().padStart(2, '0');
+        const minutesEl = document.getElementById('timer-minutes');
+        const secondsEl = document.getElementById('timer-seconds');
+        
+        if (minutesEl) minutesEl.textContent = minutes.toString().padStart(2, '0');
+        if (secondsEl) secondsEl.textContent = seconds.toString().padStart(2, '0');
     }
 
     updatePomodoroButtons() {
         const startBtn = document.getElementById('timer-start');
         const pauseBtn = document.getElementById('timer-pause');
         
-        if (this.pomodoroRunning) {
-            startBtn.style.display = 'none';
-            pauseBtn.style.display = 'inline-block';
-        } else {
-            startBtn.style.display = 'inline-block';
-            pauseBtn.style.display = 'none';
+        if (startBtn && pauseBtn) {
+            if (this.pomodoroRunning) {
+                startBtn.style.display = 'none';
+                pauseBtn.style.display = 'inline-block';
+            } else {
+                startBtn.style.display = 'inline-block';
+                pauseBtn.style.display = 'none';
+            }
         }
     }
 
@@ -966,11 +1059,6 @@ class WorkTrackApp {
             this.closeModals();
             this.hideSearchResults();
         }
-        
-        // Delete - Seçili öğeyi sil
-        if (e.key === 'Delete' && e.shiftKey) {
-            // Implementasyon eklenebilir
-        }
     }
 
     // Menü işlemleri
@@ -985,6 +1073,9 @@ class WorkTrackApp {
             case 'focus-search':
                 document.getElementById('search-input').focus();
                 break;
+            case 'switch-to-today':
+                this.switchView('today');
+                break;
         }
     }
 
@@ -998,6 +1089,15 @@ class WorkTrackApp {
             });
 
             setTimeout(() => notification.close(), 3000);
+        }
+
+        // Electron API ile widget'a da bildirim gönder
+        if (window.electronAPI) {
+            window.electronAPI.sendNotification({
+                title: 'Work Track',
+                body: message,
+                type: type
+            });
         }
 
         // Uygulama içi bildirim
@@ -1066,19 +1166,20 @@ class WorkTrackApp {
         return category ? category.name : '';
     }
 
-    // Mevcut fonksiyonlar (korundu ve güncellenmeye devam ediyor...)
     switchView(viewName) {
         // Navigasyon butonlarını güncelle
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        document.querySelector(`[data-view="${viewName}"]`).classList.add('active');
+        const activeBtn = document.querySelector(`[data-view="${viewName}"]`);
+        if (activeBtn) activeBtn.classList.add('active');
 
         // İçerik alanlarını güncelle
         document.querySelectorAll('.view-content').forEach(view => {
             view.classList.remove('active');
         });
-        document.getElementById(`${viewName}-view`).classList.add('active');
+        const activeView = document.getElementById(`${viewName}-view`);
+        if (activeView) activeView.classList.add('active');
 
         this.currentView = viewName;
 
@@ -1110,13 +1211,15 @@ class WorkTrackApp {
 
     updateUI() {
         // Tarih bilgilerini güncelle
-        document.getElementById('current-date').textContent = 
-            this.currentDate.toLocaleDateString('tr-TR', {
+        const currentDateEl = document.getElementById('current-date');
+        if (currentDateEl) {
+            currentDateEl.textContent = this.currentDate.toLocaleDateString('tr-TR', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
             });
+        }
 
         // Tema uygula
         this.changeTheme(this.data.settings.theme);
@@ -1133,10 +1236,15 @@ class WorkTrackApp {
         const activeProjects = this.data.projects.filter(project => project.status === 'active').length;
 
         // İstatistikleri güncelle
-        document.getElementById('total-tasks').textContent = totalTasks;
-        document.getElementById('completed-tasks').textContent = completedTasks;
-        document.getElementById('pending-tasks').textContent = pendingTasks;
-        document.getElementById('active-projects').textContent = activeProjects;
+        const totalTasksEl = document.getElementById('total-tasks');
+        const completedTasksEl = document.getElementById('completed-tasks');
+        const pendingTasksEl = document.getElementById('pending-tasks');
+        const activeProjectsEl = document.getElementById('active-projects');
+
+        if (totalTasksEl) totalTasksEl.textContent = totalTasks;
+        if (completedTasksEl) completedTasksEl.textContent = completedTasks;
+        if (pendingTasksEl) pendingTasksEl.textContent = pendingTasks;
+        if (activeProjectsEl) activeProjectsEl.textContent = activeProjects;
 
         // Son aktiviteleri güncelle
         this.updateRecentActivities();
@@ -1147,6 +1255,8 @@ class WorkTrackApp {
 
     updateRecentActivities() {
         const activitiesContainer = document.getElementById('recent-activities-list');
+        if (!activitiesContainer) return;
+
         const recentTasks = this.data.tasks
             .sort((a, b) => {
                 // Önce order'a göre, sonra güncelleme tarihine göre sırala
@@ -1187,6 +1297,8 @@ class WorkTrackApp {
         const todayStr = today.toISOString().split('T')[0];
         
         const todayTasksContainer = document.getElementById('today-tasks-list');
+        if (!todayTasksContainer) return;
+
         const todayTasks = this.data.tasks
             .filter(task => {
                 const taskDate = new Date(task.deadline).toISOString().split('T')[0];
@@ -1225,9 +1337,9 @@ class WorkTrackApp {
         }).join('');
     }
 
-    // Projeler ve kategoriler görünümlerini güncelle (silme butonları ile)
     updateProjectsView() {
         const projectsContainer = document.getElementById('projects-grid');
+        if (!projectsContainer) return;
         
         projectsContainer.innerHTML = this.data.projects.map(project => {
             const projectTasks = this.data.tasks.filter(task => task.projectId === project.id);
@@ -1261,6 +1373,7 @@ class WorkTrackApp {
 
     updateCategoriesView() {
         const categoriesContainer = document.getElementById('categories-list');
+        if (!categoriesContainer) return;
         
         categoriesContainer.innerHTML = this.data.categories.map(category => {
             const categoryTasks = this.data.tasks.filter(task => task.categoryId === category.id);
@@ -1287,23 +1400,24 @@ class WorkTrackApp {
         }).join('');
     }
 
-    // Diğer tüm mevcut fonksiyonlar aynı şekilde devam ediyor...
-    // (updateTodayView, updateCalendarView, generateTimeSlots, vs.)
-
     updateTodayView() {
-        document.getElementById('selected-date').textContent = 
-            this.selectedDate.toLocaleDateString('tr-TR', {
+        const selectedDateEl = document.getElementById('selected-date');
+        if (selectedDateEl) {
+            selectedDateEl.textContent = this.selectedDate.toLocaleDateString('tr-TR', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
             });
+        }
 
         this.generateTimeSlots();
     }
 
     generateTimeSlots() {
         const timeSlotsContainer = document.getElementById('time-slots');
+        if (!timeSlotsContainer) return;
+
         const selectedDateStr = this.selectedDate.toISOString().split('T')[0];
         
         const dayTasks = this.data.tasks.filter(task => {
@@ -1352,17 +1466,21 @@ class WorkTrackApp {
     }
 
     updateCalendarView() {
-        document.getElementById('current-month').textContent = 
-            this.currentDate.toLocaleDateString('tr-TR', {
+        const currentMonthEl = document.getElementById('current-month');
+        if (currentMonthEl) {
+            currentMonthEl.textContent = this.currentDate.toLocaleDateString('tr-TR', {
                 year: 'numeric',
                 month: 'long'
             });
+        }
 
         this.generateCalendar();
     }
 
     generateCalendar() {
         const calendarContainer = document.getElementById('calendar-grid');
+        if (!calendarContainer) return;
+
         const year = this.currentDate.getFullYear();
         const month = this.currentDate.getMonth();
         
@@ -1406,18 +1524,65 @@ class WorkTrackApp {
         calendarContainer.innerHTML = html;
     }
 
+    updateAnalyticsExtended(period = 'week') {
+        // Temel analitikleri güncelle
+        this.updateAnalytics(period);
+
+        // Bu haftaki tamamlanan görev sayısı
+        const weekCompleted = this.getCompletedTasksInPeriod('week');
+        const weekCompletedEl = document.getElementById('week-completed');
+        if (weekCompletedEl) {
+            weekCompletedEl.textContent = `${weekCompleted} görev`;
+        }
+    }
+
     updateAnalytics(period = 'week') {
         // Basit analitik veriler
         const completionRate = this.calculateCompletionRate(period);
         const topCategory = this.getTopCategory(period);
         const avgCompletionTime = this.calculateAvgCompletionTime(period);
 
-        document.getElementById('productivity-score').textContent = `${completionRate}%`;
-        document.getElementById('top-category').textContent = topCategory;
-        document.getElementById('avg-completion').textContent = avgCompletionTime;
+        const productivityScoreEl = document.getElementById('productivity-score');
+        const topCategoryEl = document.getElementById('top-category');
+        const avgCompletionEl = document.getElementById('avg-completion');
+
+        if (productivityScoreEl) productivityScoreEl.textContent = `${completionRate}%`;
+        if (topCategoryEl) topCategoryEl.textContent = topCategory;
+        if (avgCompletionEl) avgCompletionEl.textContent = avgCompletionTime;
     }
 
-    // Modal işlemleri (mevcut kodlar korundu)
+    updateTemplatesView() {
+        const templatesContainer = document.getElementById('templates-grid');
+        if (!templatesContainer) return;
+        
+        templatesContainer.innerHTML = this.data.templates.map(template => {
+            const category = this.data.categories.find(c => c.id === template.categoryId);
+            
+            return `
+                <div class="template-card">
+                    <div class="template-header">
+                        <div class="template-name" onclick="app.editTemplate('${template.id}')">${template.name}</div>
+                        <div class="template-actions">
+                            <button class="btn-use-template" onclick="app.createTaskFromTemplate('${template.id}')" title="Şablondan Görev Oluştur">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="btn-delete-template" onclick="app.deleteTemplate('${template.id}')" title="Şablonu Sil">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="template-description">${template.description}</div>
+                    <div class="template-meta">
+                        <span class="template-priority ${template.priority}">${this.getPriorityText(template.priority)}</span>
+                        <span class="template-category">${category ? category.name : 'Kategorisiz'}</span>
+                        <span class="template-time">${template.estimatedTime || 0} saat</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Modal işlemleri
     openTaskModal(taskId = null) {
         this.currentEditingTask = taskId;
         const modal = document.getElementById('task-modal');
@@ -1426,15 +1591,15 @@ class WorkTrackApp {
 
         if (taskId) {
             const task = this.data.tasks.find(t => t.id === taskId);
-            title.textContent = 'Görevi Düzenle';
-            this.fillTaskForm(task);
+            if (title) title.textContent = 'Görevi Düzenle';
+            if (task) this.fillTaskForm(task);
         } else {
-            title.textContent = 'Yeni Görev';
-            form.reset();
+            if (title) title.textContent = 'Yeni Görev';
+            if (form) form.reset();
         }
 
         this.populateSelects();
-        modal.classList.add('active');
+        if (modal) modal.classList.add('active');
     }
 
     openProjectModal(projectId = null) {
@@ -1445,14 +1610,14 @@ class WorkTrackApp {
 
         if (projectId) {
             const project = this.data.projects.find(p => p.id === projectId);
-            title.textContent = 'Projeyi Düzenle';
-            this.fillProjectForm(project);
+            if (title) title.textContent = 'Projeyi Düzenle';
+            if (project) this.fillProjectForm(project);
         } else {
-            title.textContent = 'Yeni Proje';
-            form.reset();
+            if (title) title.textContent = 'Yeni Proje';
+            if (form) form.reset();
         }
 
-        modal.classList.add('active');
+        if (modal) modal.classList.add('active');
     }
 
     openCategoryModal(categoryId = null) {
@@ -1463,14 +1628,39 @@ class WorkTrackApp {
 
         if (categoryId) {
             const category = this.data.categories.find(c => c.id === categoryId);
-            title.textContent = 'Kategoriyi Düzenle';
-            this.fillCategoryForm(category);
+            if (title) title.textContent = 'Kategoriyi Düzenle';
+            if (category) this.fillCategoryForm(category);
         } else {
-            title.textContent = 'Yeni Kategori';
-            form.reset();
+            if (title) title.textContent = 'Yeni Kategori';
+            if (form) form.reset();
         }
 
-        modal.classList.add('active');
+        if (modal) modal.classList.add('active');
+    }
+
+    openTemplateModal(templateId = null) {
+        this.currentEditingTemplate = templateId;
+        const modal = document.getElementById('template-modal');
+        const form = document.getElementById('template-form');
+        const title = document.getElementById('template-modal-title');
+
+        if (templateId) {
+            const template = this.data.templates.find(t => t.id === templateId);
+            if (title) title.textContent = 'Şablonu Düzenle';
+            if (template) this.fillTemplateForm(template);
+        } else {
+            if (title) title.textContent = 'Yeni Şablon';
+            if (form) form.reset();
+        }
+
+        this.populateTemplateSelects();
+        if (modal) modal.classList.add('active');
+    }
+
+    openSettingsModal() {
+        const modal = document.getElementById('settings-modal');
+        this.fillSettingsForm();
+        if (modal) modal.classList.add('active');
     }
 
     closeModals() {
@@ -1486,44 +1676,60 @@ class WorkTrackApp {
     populateSelects() {
         // Proje seçenekleri
         const projectSelect = document.getElementById('task-project');
-        projectSelect.innerHTML = '<option value="">Proje Seçin</option>' + 
-            this.data.projects.map(project => 
-                `<option value="${project.id}">${project.name}</option>`
-            ).join('');
+        if (projectSelect) {
+            projectSelect.innerHTML = '<option value="">Proje Seçin</option>' + 
+                this.data.projects.map(project => 
+                    `<option value="${project.id}">${project.name}</option>`
+                ).join('');
+        }
 
         // Kategori seçenekleri
         const categorySelect = document.getElementById('task-category');
-        categorySelect.innerHTML = '<option value="">Kategori Seçin</option>' + 
-            this.data.categories.map(category => 
-                `<option value="${category.id}">${category.name}</option>`
-            ).join('');
+        if (categorySelect) {
+            categorySelect.innerHTML = '<option value="">Kategori Seçin</option>' + 
+                this.data.categories.map(category => 
+                    `<option value="${category.id}">${category.name}</option>`
+                ).join('');
+        }
 
         // Etiketleri güncelle
         this.updateTagsContainer();
     }
 
-    fillTaskForm(task) {
-        document.getElementById('task-title').value = task.title;
-        document.getElementById('task-description').value = task.description || '';
-        document.getElementById('task-project').value = task.projectId || '';
-        document.getElementById('task-category').value = task.categoryId || '';
-        document.getElementById('task-priority').value = task.priority;
-        document.getElementById('task-estimated-time').value = task.estimatedTime || '';
-        
-        // Durum seçeneği varsa
-        const statusSelect = document.getElementById('task-status');
-        if (statusSelect) {
-            statusSelect.value = task.status || 'pending';
+    populateTemplateSelects() {
+        const categorySelect = document.getElementById('template-category');
+        if (categorySelect) {
+            categorySelect.innerHTML = '<option value="">Kategori Seçin</option>' + 
+                this.data.categories.map(category => 
+                    `<option value="${category.id}">${category.name}</option>`
+                ).join('');
         }
+    }
 
-        // Zaman bilgileri
-        document.getElementById('task-start-time').value = task.startTime || '09:00';
-        document.getElementById('task-end-time').value = task.endTime || '17:00';
+    fillTaskForm(task) {
+        const elements = {
+            'task-title': task.title,
+            'task-description': task.description || '',
+            'task-project': task.projectId || '',
+            'task-category': task.categoryId || '',
+            'task-priority': task.priority,
+            'task-status': task.status || 'pending',
+            'task-estimated-time': task.estimatedTime || '',
+            'task-start-time': task.startTime || '09:00',
+            'task-end-time': task.endTime || '17:00'
+        };
+
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) element.value = value;
+        });
         
         if (task.deadline) {
             const deadline = new Date(task.deadline);
-            document.getElementById('task-deadline').value = 
-                deadline.toISOString().slice(0, 16);
+            const deadlineEl = document.getElementById('task-deadline');
+            if (deadlineEl) {
+                deadlineEl.value = deadline.toISOString().slice(0, 16);
+            }
         }
 
         // Etiketleri seç
@@ -1533,37 +1739,92 @@ class WorkTrackApp {
     }
 
     fillProjectForm(project) {
-        document.getElementById('project-name').value = project.name;
-        document.getElementById('project-description').value = project.description || '';
-        document.getElementById('project-color').value = project.color;
+        const elements = {
+            'project-name': project.name,
+            'project-description': project.description || '',
+            'project-color': project.color
+        };
+
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) element.value = value;
+        });
         
         if (project.deadline) {
             const deadline = new Date(project.deadline);
-            document.getElementById('project-deadline').value = 
-                deadline.toISOString().slice(0, 10);
+            const deadlineEl = document.getElementById('project-deadline');
+            if (deadlineEl) {
+                deadlineEl.value = deadline.toISOString().slice(0, 10);
+            }
         }
     }
 
     fillCategoryForm(category) {
-        document.getElementById('category-name').value = category.name;
-        document.getElementById('category-color').value = category.color;
-        document.getElementById('category-icon').value = category.icon;
+        const elements = {
+            'category-name': category.name,
+            'category-color': category.color,
+            'category-icon': category.icon
+        };
+
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) element.value = value;
+        });
     }
 
-    // Kaydetme işlemleri (mevcut kodlar korundu)
+    fillTemplateForm(template) {
+        const elements = {
+            'template-name': template.name,
+            'template-description': template.description || '',
+            'template-category': template.categoryId || '',
+            'template-priority': template.priority,
+            'template-estimated-time': template.estimatedTime || ''
+        };
+
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) element.value = value;
+        });
+    }
+
+    fillSettingsForm() {
+        const settings = this.data.settings;
+        const elements = {
+            'setting-notifications': settings.notifications,
+            'setting-sound': settings.notificationSound,
+            'setting-pomodoro-length': settings.pomodoroLength,
+            'setting-short-break': settings.shortBreak,
+            'setting-long-break': settings.longBreak,
+            'setting-start-time': settings.startTime,
+            'setting-end-time': settings.endTime
+        };
+
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                if (element.type === 'checkbox') {
+                    element.checked = value;
+                } else {
+                    element.value = value;
+                }
+            }
+        });
+    }
+
+    // Kaydetme işlemleri
     saveTask() {
         const formData = {
-            title: document.getElementById('task-title').value,
-            description: document.getElementById('task-description').value,
-            projectId: document.getElementById('task-project').value || null,
-            categoryId: document.getElementById('task-category').value || null,
-            priority: document.getElementById('task-priority').value,
-            status: document.getElementById('task-status') ? document.getElementById('task-status').value : 'pending',
-            estimatedTime: parseFloat(document.getElementById('task-estimated-time').value) || null,
-            deadline: document.getElementById('task-deadline').value ? 
-                new Date(document.getElementById('task-deadline').value).toISOString() : null,
-            startTime: document.getElementById('task-start-time').value || '09:00',
-            endTime: document.getElementById('task-end-time').value || '17:00',
+            title: this.getElementValue('task-title'),
+            description: this.getElementValue('task-description'),
+            projectId: this.getElementValue('task-project') || null,
+            categoryId: this.getElementValue('task-category') || null,
+            priority: this.getElementValue('task-priority'),
+            status: this.getElementValue('task-status') || 'pending',
+            estimatedTime: parseFloat(this.getElementValue('task-estimated-time')) || null,
+            deadline: this.getElementValue('task-deadline') ? 
+                new Date(this.getElementValue('task-deadline')).toISOString() : null,
+            startTime: this.getElementValue('task-start-time') || '09:00',
+            endTime: this.getElementValue('task-end-time') || '17:00',
             tags: this.getSelectedTags()
         };
 
@@ -1596,11 +1857,11 @@ class WorkTrackApp {
 
     saveProject() {
         const formData = {
-            name: document.getElementById('project-name').value,
-            description: document.getElementById('project-description').value,
-            color: document.getElementById('project-color').value,
-            deadline: document.getElementById('project-deadline').value ? 
-                new Date(document.getElementById('project-deadline').value).toISOString() : null
+            name: this.getElementValue('project-name'),
+            description: this.getElementValue('project-description'),
+            color: this.getElementValue('project-color'),
+            deadline: this.getElementValue('project-deadline') ? 
+                new Date(this.getElementValue('project-deadline')).toISOString() : null
         };
 
         if (this.currentEditingProject) {
@@ -1633,9 +1894,9 @@ class WorkTrackApp {
 
     saveCategory() {
         const formData = {
-            name: document.getElementById('category-name').value,
-            color: document.getElementById('category-color').value,
-            icon: document.getElementById('category-icon').value
+            name: this.getElementValue('category-name'),
+            color: this.getElementValue('category-color'),
+            icon: this.getElementValue('category-icon')
         };
 
         if (this.currentEditingCategory) {
@@ -1663,92 +1924,13 @@ class WorkTrackApp {
         this.updateUI();
     }
 
-    // Düzenleme işlemleri
-    editTask(taskId) {
-        this.openTaskModal(taskId);
-    }
-
-    editProject(projectId) {
-        this.openProjectModal(projectId);
-    }
-
-    editCategory(categoryId) {
-        this.openCategoryModal(categoryId);
-    }
-
-    // Şablon sistemi
-    updateTemplatesView() {
-        const templatesContainer = document.getElementById('templates-grid');
-        
-        templatesContainer.innerHTML = this.data.templates.map(template => {
-            const category = this.data.categories.find(c => c.id === template.categoryId);
-            
-            return `
-                <div class="template-card">
-                    <div class="template-header">
-                        <div class="template-name" onclick="app.editTemplate('${template.id}')">${template.name}</div>
-                        <div class="template-actions">
-                            <button class="btn-use-template" onclick="app.createTaskFromTemplate('${template.id}')" title="Şablondan Görev Oluştur">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                            <button class="btn-delete-template" onclick="app.deleteTemplate('${template.id}')" title="Şablonu Sil">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="template-description">${template.description}</div>
-                    <div class="template-meta">
-                        <span class="template-priority ${template.priority}">${this.getPriorityText(template.priority)}</span>
-                        <span class="template-category">${category ? category.name : 'Kategorisiz'}</span>
-                        <span class="template-time">${template.estimatedTime || 0} saat</span>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    openTemplateModal(templateId = null) {
-        this.currentEditingTemplate = templateId;
-        const modal = document.getElementById('template-modal');
-        const form = document.getElementById('template-form');
-        const title = document.getElementById('template-modal-title');
-
-        if (templateId) {
-            const template = this.data.templates.find(t => t.id === templateId);
-            title.textContent = 'Şablonu Düzenle';
-            this.fillTemplateForm(template);
-        } else {
-            title.textContent = 'Yeni Şablon';
-            form.reset();
-        }
-
-        this.populateTemplateSelects();
-        modal.classList.add('active');
-    }
-
-    fillTemplateForm(template) {
-        document.getElementById('template-name').value = template.name;
-        document.getElementById('template-description').value = template.description || '';
-        document.getElementById('template-category').value = template.categoryId || '';
-        document.getElementById('template-priority').value = template.priority;
-        document.getElementById('template-estimated-time').value = template.estimatedTime || '';
-    }
-
-    populateTemplateSelects() {
-        const categorySelect = document.getElementById('template-category');
-        categorySelect.innerHTML = '<option value="">Kategori Seçin</option>' + 
-            this.data.categories.map(category => 
-                `<option value="${category.id}">${category.name}</option>`
-            ).join('');
-    }
-
     saveTemplate() {
         const formData = {
-            name: document.getElementById('template-name').value,
-            description: document.getElementById('template-description').value,
-            categoryId: document.getElementById('template-category').value || null,
-            priority: document.getElementById('template-priority').value,
-            estimatedTime: parseFloat(document.getElementById('template-estimated-time').value) || null
+            name: this.getElementValue('template-name'),
+            description: this.getElementValue('template-description'),
+            categoryId: this.getElementValue('template-category') || null,
+            priority: this.getElementValue('template-priority'),
+            estimatedTime: parseFloat(this.getElementValue('template-estimated-time')) || null
         };
 
         if (this.currentEditingTemplate) {
@@ -1772,6 +1954,40 @@ class WorkTrackApp {
         this.saveData();
         this.closeModals();
         this.updateUI();
+    }
+
+    saveSettings() {
+        this.data.settings = {
+            ...this.data.settings,
+            notifications: this.getElementChecked('setting-notifications'),
+            notificationSound: this.getElementChecked('setting-sound'),
+            pomodoroLength: parseInt(this.getElementValue('setting-pomodoro-length')),
+            shortBreak: parseInt(this.getElementValue('setting-short-break')),
+            longBreak: parseInt(this.getElementValue('setting-long-break')),
+            startTime: this.getElementValue('setting-start-time'),
+            endTime: this.getElementValue('setting-end-time')
+        };
+
+        // Pomodoro timer'ı güncelle
+        this.pomodoroTimeLeft = this.data.settings.pomodoroLength * 60;
+        this.updatePomodoroDisplay();
+
+        this.saveData();
+        this.closeModals();
+        this.showNotification('Ayarlar kaydedildi', 'success');
+    }
+
+    // Düzenleme işlemleri
+    editTask(taskId) {
+        this.openTaskModal(taskId);
+    }
+
+    editProject(projectId) {
+        this.openProjectModal(projectId);
+    }
+
+    editCategory(categoryId) {
+        this.openCategoryModal(categoryId);
     }
 
     editTemplate(templateId) {
@@ -1819,102 +2035,6 @@ class WorkTrackApp {
         this.showNotification(`"${template.name}" şablonundan görev oluşturuldu`, 'success');
     }
 
-    // Ayarlar sistemi
-    openSettingsModal() {
-        const modal = document.getElementById('settings-modal');
-        this.fillSettingsForm();
-        modal.classList.add('active');
-    }
-
-    fillSettingsForm() {
-        const settings = this.data.settings;
-        document.getElementById('setting-notifications').checked = settings.notifications;
-        document.getElementById('setting-sound').checked = settings.notificationSound;
-        document.getElementById('setting-pomodoro-length').value = settings.pomodoroLength;
-        document.getElementById('setting-short-break').value = settings.shortBreak;
-        document.getElementById('setting-long-break').value = settings.longBreak;
-        document.getElementById('setting-start-time').value = settings.startTime;
-        document.getElementById('setting-end-time').value = settings.endTime;
-    }
-
-    saveSettings() {
-        this.data.settings = {
-            ...this.data.settings,
-            notifications: document.getElementById('setting-notifications').checked,
-            notificationSound: document.getElementById('setting-sound').checked,
-            pomodoroLength: parseInt(document.getElementById('setting-pomodoro-length').value),
-            shortBreak: parseInt(document.getElementById('setting-short-break').value),
-            longBreak: parseInt(document.getElementById('setting-long-break').value),
-            startTime: document.getElementById('setting-start-time').value,
-            endTime: document.getElementById('setting-end-time').value
-        };
-
-        // Pomodoro timer'ı güncelle
-        this.pomodoroTimeLeft = this.data.settings.pomodoroLength * 60;
-        this.updatePomodoroDisplay();
-
-        this.saveData();
-        this.closeModals();
-        this.showNotification('Ayarlar kaydedildi', 'success');
-    }
-
-    // Toplu silme işlemleri
-    deleteAllProjects() {
-        if (this.data.projects.length === 0) {
-            this.showNotification('Silinecek proje bulunamadı', 'info');
-            return;
-        }
-
-        const result = confirm(`${this.data.projects.length} projeyi silmek istediğinizden emin misiniz?\n\nProje görevleri projesiz hale gelecek.`);
-        if (result) {
-            // Tüm görevlerin proje bağlantısını kaldır
-            this.data.tasks.forEach(task => {
-                task.projectId = null;
-            });
-            
-            this.data.projects = [];
-            this.saveData();
-            this.updateUI();
-            this.showNotification('Tüm projeler silindi', 'success');
-        }
-    }
-
-    deleteAllCategories() {
-        if (this.data.categories.length === 0) {
-            this.showNotification('Silinecek kategori bulunamadı', 'info');
-            return;
-        }
-
-        const result = confirm(`${this.data.categories.length} kategoriyi silmek istediğinizden emin misiniz?\n\nKategori görevleri kategorisiz hale gelecek.`);
-        if (result) {
-            // Tüm görevlerin kategori bağlantısını kaldır
-            this.data.tasks.forEach(task => {
-                task.categoryId = null;
-            });
-            
-            // Varsayılan kategorileri yeniden oluştur
-            this.data.categories = [];
-            this.createDefaultData();
-            this.updateUI();
-            this.showNotification('Tüm kategoriler silindi ve varsayılanlar yeniden oluşturuldu', 'success');
-        }
-    }
-
-    deleteAllTasks() {
-        if (this.data.tasks.length === 0) {
-            this.showNotification('Silinecek görev bulunamadı', 'info');
-            return;
-        }
-
-        const result = confirm(`${this.data.tasks.length} görevi silmek istediğinizden emin misiniz?\n\nBu işlem geri alınamaz!`);
-        if (result) {
-            this.data.tasks = [];
-            this.saveData();
-            this.updateUI();
-            this.showNotification('Tüm görevler silindi', 'success');
-        }
-    }
-
     // Etiket sistemi
     updateTagsContainer() {
         const container = document.getElementById('task-tags-container');
@@ -1946,16 +2066,13 @@ class WorkTrackApp {
         });
     }
 
-    // Gelişmiş analitikler
-    updateAnalyticsExtended(period = 'week') {
-        // Temel analitikleri güncelle
-        this.updateAnalytics(period);
-
-        // Bu haftaki tamamlanan görev sayısı
-        const weekCompleted = this.getCompletedTasksInPeriod('week');
-        document.getElementById('week-completed').textContent = `${weekCompleted} görev`;
+    // Takvim işlemleri
+    selectCalendarDate(dateStr) {
+        this.selectedDate = new Date(dateStr);
+        this.switchView('today');
     }
 
+    // Analitik hesaplamaları
     getCompletedTasksInPeriod(period) {
         const now = new Date();
         let startDate;
@@ -1976,59 +2093,6 @@ class WorkTrackApp {
             task.completedAt && 
             new Date(task.completedAt) >= startDate
         ).length;
-    }
-
-    // Takvim işlemleri
-    selectCalendarDate(dateStr) {
-        this.selectedDate = new Date(dateStr);
-        this.switchView('today');
-    }
-
-    // Yardımcı fonksiyonlar
-    generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
-    }
-
-    formatDate(dateStr) {
-        if (!dateStr) return 'Belirtilmemiş';
-        return new Date(dateStr).toLocaleDateString('tr-TR');
-    }
-
-    formatTime(dateStr) {
-        if (!dateStr) return '';
-        return new Date(dateStr).toLocaleTimeString('tr-TR', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-
-    getPriorityText(priority) {
-        const priorities = {
-            low: 'Düşük',
-            medium: 'Orta',
-            high: 'Yüksek',
-            urgent: 'Acil'
-        };
-        return priorities[priority] || 'Orta';
-    }
-
-    isToday(date) {
-        const today = new Date();
-        return date.toDateString() === today.toDateString();
-    }
-
-    getTasksForDate(date) {
-        const dateStr = date.toISOString().split('T')[0];
-        return this.data.tasks.filter(task => {
-            if (!task.deadline) return false;
-            const taskDate = new Date(task.deadline).toISOString().split('T')[0];
-            return taskDate === dateStr;
-        });
-    }
-
-    getTaskColor(task) {
-        const category = this.data.categories.find(c => c.id === task.categoryId);
-        return category ? category.color : '#667eea';
     }
 
     calculateCompletionRate(period) {
@@ -2120,6 +2184,63 @@ class WorkTrackApp {
             console.error('İçe aktarma hatası:', error);
             this.showNotification('İçe aktarma sırasında hata oluştu', 'error');
         }
+    }
+
+    // Yardımcı fonksiyonlar
+    generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    formatDate(dateStr) {
+        if (!dateStr) return 'Belirtilmemiş';
+        return new Date(dateStr).toLocaleDateString('tr-TR');
+    }
+
+    formatTime(dateStr) {
+        if (!dateStr) return '';
+        return new Date(dateStr).toLocaleTimeString('tr-TR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    getPriorityText(priority) {
+        const priorities = {
+            low: 'Düşük',
+            medium: 'Orta',
+            high: 'Yüksek',
+            urgent: 'Acil'
+        };
+        return priorities[priority] || 'Orta';
+    }
+
+    isToday(date) {
+        const today = new Date();
+        return date.toDateString() === today.toDateString();
+    }
+
+    getTasksForDate(date) {
+        const dateStr = date.toISOString().split('T')[0];
+        return this.data.tasks.filter(task => {
+            if (!task.deadline) return false;
+            const taskDate = new Date(task.deadline).toISOString().split('T')[0];
+            return taskDate === dateStr;
+        });
+    }
+
+    getTaskColor(task) {
+        const category = this.data.categories.find(c => c.id === task.categoryId);
+        return category ? category.color : '#667eea';
+    }
+
+    getElementValue(id) {
+        const element = document.getElementById(id);
+        return element ? element.value : '';
+    }
+
+    getElementChecked(id) {
+        const element = document.getElementById(id);
+        return element ? element.checked : false;
     }
 }
 

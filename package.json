@@ -1,156 +1,229 @@
 {
-    "name": "work-track",
-    "version": "2.0.0",
-    "description": "Gelişmiş işlevselliklerle detaylı ajanda ve proje takip uygulaması",
-    "main": "main.js",
-    "scripts": {
-      "start": "electron .",
-      "dev": "electron . --dev",
-      "build": "electron-builder",
-      "dist": "electron-builder --publish=never",
-      "pack": "electron-builder --dir",
-      "clean": "rimraf dist",
-      "lint": "eslint *.js",
-      "test": "echo \"Error: no test specified\" && exit 1"
+  "name": "work-track",
+  "version": "2.1.0",
+  "description": "Gelişmiş işlevselliklerle detaylı ajanda ve proje takip uygulaması - Masaüstü Widget desteği ile",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "dist": "electron-builder --publish=never",
+    "pack": "electron-builder --dir",
+    "clean": "rimraf dist",
+    "lint": "eslint *.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "widget-dev": "electron . --dev --show-widget",
+    "build-all": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "electron",
+    "todo",
+    "productivity",
+    "glassmorphism",
+    "task-management",
+    "project-management",
+    "time-tracking",
+    "pomodoro",
+    "calendar",
+    "analytics",
+    "templates",
+    "tags",
+    "widget",
+    "desktop-widget",
+    "system-tray",
+    "notifications",
+    "always-on-top",
+    "floating-window"
+  ],
+  "author": {
+    "name": "Work Track Team",
+    "email": "info@worktrack.app"
+  },
+  "license": "MIT",
+  "homepage": "https://worktrack.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/worktrack/work-track.git"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "eslint": "^8.57.0",
+    "rimraf": "^5.0.0"
+  },
+  "build": {
+    "appId": "com.worktrack.app",
+    "productName": "Work Track",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
     },
-    "keywords": [
-      "electron",
-      "todo",
-      "productivity",
-      "glassmorphism",
-      "task-management",
-      "project-management",
-      "time-tracking",
-      "pomodoro",
-      "calendar",
-      "analytics",
-      "templates",
-      "tags"
+    "files": [
+      "**/*",
+      "!node_modules",
+      "!dist",
+      "!build",
+      "!.git",
+      "!.gitignore",
+      "!README.md",
+      "!*.log"
     ],
-    "author": {
-      "name": "Work Track Team",
-      "email": "info@worktrack.app"
+    "extraFiles": [
+      {
+        "from": "assets/",
+        "to": "assets/",
+        "filter": ["**/*"]
+      }
+    ],
+    "extraMetadata": {
+      "main": "main.js"
     },
-    "license": "MIT",
-    "homepage": "https://worktrack.app",
-    "repository": {
-      "type": "git",
-      "url": "https://github.com/worktrack/work-track.git"
-    },
-    "devDependencies": {
-      "electron": "^28.0.0",
-      "electron-builder": "^24.9.1",
-      "eslint": "^8.57.0",
-      "rimraf": "^5.0.0"
-    },
-    "build": {
-      "appId": "com.worktrack.app",
-      "productName": "Work Track",
-      "directories": {
-        "output": "dist",
-        "buildResources": "build"
-      },
-      "files": [
-        "**/*",
-        "!node_modules",
-        "!dist",
-        "!build",
-        "!.git",
-        "!.gitignore",
-        "!README.md",
-        "!*.log"
-      ],
-      "extraMetadata": {
-        "main": "main.js"
-      },
-      "win": {
-        "target": [
-          {
-            "target": "nsis",
-            "arch": ["x64", "ia32"]
-          },
-          {
-            "target": "portable",
-            "arch": ["x64"]
-          }
-        ],
-        "icon": "assets/icon.ico",
-        "publisherName": "Work Track",
-        "requestedExecutionLevel": "asInvoker"
-      },
-      "mac": {
-        "target": [
-          {
-            "target": "dmg",
-            "arch": ["x64", "arm64"]
-          },
-          {
-            "target": "zip",
-            "arch": ["x64", "arm64"]
-          }
-        ],
-        "icon": "assets/icon.icns",
-        "category": "public.app-category.productivity",
-        "darkModeSupport": true
-      },
-      "linux": {
-        "target": [
-          {
-            "target": "AppImage",
-            "arch": ["x64"]
-          },
-          {
-            "target": "snap",
-            "arch": ["x64"]
-          },
-          {
-            "target": "deb",
-            "arch": ["x64"]
-          }
-        ],
-        "icon": "assets/icon.png",
-        "category": "Office"
-      },
-      "nsis": {
-        "oneClick": false,
-        "allowElevation": true,
-        "allowToChangeInstallationDirectory": true,
-        "createDesktopShortcut": true,
-        "createStartMenuShortcut": true,
-        "shortcutName": "Work Track"
-      },
-      "dmg": {
-        "title": "Work Track",
-        "icon": "assets/icon.icns",
-        "background": "assets/dmg-background.png",
-        "window": {
-          "width": 600,
-          "height": 400
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
         },
-        "contents": [
-          {
-            "x": 150,
-            "y": 200,
-            "type": "file"
-          },
-          {
-            "x": 450,
-            "y": 200,
-            "type": "link",
-            "path": "/Applications"
-          }
-        ]
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "publisherName": "Work Track",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.productivity",
+      "darkModeSupport": true,
+      "type": "distribution"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "snap",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.png",
+      "category": "Office"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Work Track",
+      "menuCategory": "Productivity",
+      "runAfterFinish": true
+    },
+    "dmg": {
+      "title": "Work Track",
+      "icon": "assets/icon.icns",
+      "background": "assets/dmg-background.png",
+      "window": {
+        "width": 600,
+        "height": 400
       },
-      "snap": {
-        "summary": "Gelişmiş görev ve proje takip uygulaması",
-        "description": "Work Track, modern glassmorphism tasarımı ile güçlü görev yönetimi, Pomodoro timer, analitikler ve daha fazlasını sunan üretkenlik uygulamasıdır.",
-        "grade": "stable",
-        "confinement": "strict",
-        "category": "office"
+      "contents": [
+        {
+          "x": 150,
+          "y": 200,
+          "type": "file"
+        },
+        {
+          "x": 450,
+          "y": 200,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "snap": {
+      "summary": "Gelişmiş görev ve proje takip uygulaması - Widget desteği ile",
+      "description": "Work Track, modern glassmorphism tasarımı ile güçlü görev yönetimi, Pomodoro timer, analitikler, masaüstü widget'ı ve daha fazlasını sunan üretkenlik uygulamasıdır. Program kapatıldığında bile widget çalışmaya devam eder.",
+      "grade": "stable",
+      "confinement": "strict",
+      "category": "office",
+      "environment": {
+        "DISABLE_WAYLAND": "1"
       }
     },
-    "engines": {
-      "node": ">=16.0.0",
-      "npm": ">=8.0.0"
+    "deb": {
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libdrm2",
+        "libxcomposite1",
+        "libxdamage1",
+        "libxrandr2",
+        "libgbm1",
+        "libxkbcommon0",
+        "libasound2"
+      ]
+    }
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "workTrack": {
+    "features": [
+      "Task Management",
+      "Project Tracking",
+      "Pomodoro Timer",
+      "Calendar Integration",
+      "Analytics Dashboard",
+      "Desktop Widget",
+      "System Tray Integration",
+      "Always On Top Mode",
+      "Quick Task Creation",
+      "Drag & Drop Support",
+      "Keyboard Shortcuts",
+      "Data Import/Export",
+      "Multiple Themes",
+      "Notification System"
+    ],
+    "widget": {
+      "defaultSize": {
+        "width": 320,
+        "height": 480
+      },
+      "features": [
+        "Today's Tasks",
+        "Quick Task Creation",
+        "Pomodoro Timer",
+        "Statistics Overview",
+        "Upcoming Deadlines",
+        "Always On Top",
+        "Draggable Position",
+        "Real-time Sync"
+      ]
     }
   }
+}

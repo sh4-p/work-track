@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Track Widget</title>
+    <link rel="stylesheet" href="widget.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="widget-container">
+        <!-- Başlık Çubuğu (Draggable) -->
+        <div class="widget-header" id="widget-header">
+            <div class="widget-title">
+                <i class="fas fa-tasks"></i>
+                <span>Work Track</span>
+            </div>
+            <div class="widget-controls">
+                <button id="toggle-always-on-top" title="Her Zaman Üstte">
+                    <i class="fas fa-thumbtack"></i>
+                </button>
+                <button id="open-main-app" title="Ana Uygulamayı Aç">
+                    <i class="fas fa-external-link-alt"></i>
+                </button>
+                <button id="close-widget" title="Widget'ı Kapat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Ana İçerik -->
+        <div class="widget-content">
+            <!-- İstatistikler -->
+            <div class="widget-stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="today-tasks-count">0</div>
+                    <div class="stat-label">Bugün</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="completed-count">0</div>
+                    <div class="stat-label">Tamamlanan</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="pending-count">0</div>
+                    <div class="stat-label">Bekleyen</div>
+                </div>
+            </div>
+
+            <!-- Pomodoro Timer -->
+            <div class="widget-pomodoro">
+                <div class="pomodoro-display">
+                    <div class="timer-circle">
+                        <div class="timer-time">
+                            <span id="pomodoro-minutes">25</span>:<span id="pomodoro-seconds">00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="pomodoro-controls">
+                    <button id="pomodoro-start" class="pomodoro-btn">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button id="pomodoro-pause" class="pomodoro-btn" style="display: none;">
+                        <i class="fas fa-pause"></i>
+                    </button>
+                    <button id="pomodoro-reset" class="pomodoro-btn">
+                        <i class="fas fa-stop"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bugünün Görevleri -->
+            <div class="widget-section">
+                <div class="section-title">
+                    <i class="fas fa-calendar-day"></i>
+                    <span>Bugünün Görevleri</span>
+                </div>
+                <div class="today-tasks-list" id="today-tasks-list">
+                    <div class="no-tasks" id="no-tasks-message">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Bugün için görev yok</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hızlı Görev Ekleme -->
+            <div class="widget-section">
+                <div class="section-title">
+                    <i class="fas fa-plus"></i>
+                    <span>Hızlı Görev Ekle</span>
+                </div>
+                <form id="quick-task-form" class="quick-task-form">
+                    <input type="text" id="quick-task-input" placeholder="Görev başlığı..." required>
+                    <div class="quick-task-options">
+                        <select id="quick-task-priority">
+                            <option value="medium">Orta Öncelik</option>
+                            <option value="low">Düşük Öncelik</option>
+                            <option value="high">Yüksek Öncelik</option>
+                            <option value="urgent">Acil</option>
+                        </select>
+                        <button type="submit" class="quick-add-btn">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Yaklaşan Deadline'lar -->
+            <div class="widget-section">
+                <div class="section-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Yaklaşan Deadline'lar</span>
+                </div>
+                <div class="upcoming-deadlines" id="upcoming-deadlines">
+                    <div class="no-deadlines" id="no-deadlines-message">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Yaklaşan deadline yok</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alt Bilgi -->
+        <div class="widget-footer">
+            <div class="current-time" id="current-time"></div>
+            <div class="widget-status" id="widget-status">
+                <i class="fas fa-circle" style="color: #48cfad;"></i>
+                <span>Aktif</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bildirim Alanı -->
+    <div class="widget-notification" id="widget-notification" style="display: none;">
+        <div class="notification-content">
+            <i class="notification-icon"></i>
+            <span class="notification-message"></span>
+        </div>
+    </div>
+
+    <script src="widget.js"></script>
+</body>
+</html>
